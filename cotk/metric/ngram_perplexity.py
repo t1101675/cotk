@@ -38,7 +38,7 @@ class NgramFwBwPerplexityMetric(MetricBase):
 	'''
 
 	_name = 'NgramFwBwPerplexityMetric'
-	_version = 2
+	_version = 1
 
 	@hooks.hook_metric
 	def __init__(self, dataloader: "LanguageProcessing", reference_test_list: List[Any], ngram: int = 4, *, \
@@ -72,8 +72,8 @@ class NgramFwBwPerplexityMetric(MetricBase):
 
 			* **fwppl**: fw ppl value.
 			* **bwppl**: bw ppl value.
-			* **fwppl hashvalue**: hash value of fw ppl.
-			* **bwppl hashvalue**: hash value of bw ppl.
+			* **fw-bw-ppl**: Harmonic mean of fw and bw ppl value.
+			* **fw-bw-ppl hashvalue**: hash value of reference data.
 		'''
 		res = super().close()
 

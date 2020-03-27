@@ -9,7 +9,7 @@ from cotk.models.ngram_language_model import KneserNeyInterpolated
 
 from metric_base import *
 
-#pytestmark = pytest.mark.skip("all tests still WIP")
+pytestmark = pytest.mark.skip("all tests still WIP")
 
 class TestNgramLM():
 	@pytest.mark.parametrize('order', [1, 2, 3, 4])
@@ -86,37 +86,30 @@ class TestNgramFwBwPerplexityMetric():
 								   gen_len='non-empty', ref_len='non-empty')
 
 		# dataloader.data["test"][reference_key] = data[reference_key]
-		fpm = NgramFwBwPerplexityMetric(dataloader, reference_test_list = data[reference_key], \
-											ngram = 4)
+		fpm = NgramFwBwPerplexityMetric(dataloader, 4, data[reference_key])
 		fpm.forward(data)
 		res = fpm.close()
 
 		data_shuffle = shuffle_instances(data, key_list)
 		# dataloader.data["test"][reference_key] = data_shuffle[reference_key]
-		fpm_shuffle = NgramFwBwPerplexityMetric(dataloader, reference_test_list = \
-													data_shuffle[reference_key], ngram = 4)
+		fpm_shuffle = NgramFwBwPerplexityMetric(dataloader, 4, data_shuffle[reference_key])
 		fpm_shuffle.forward(data_shuffle)
 		res_shuffle = fpm_shuffle.close()
-		assert res["fwppl hashvalue"] == res_shuffle["fwppl hashvalue"]
-		assert res["bwppl hashvalue"] == res_shuffle["bwppl hashvalue"]
 
-		for data_unequal in generate_unequal_data(data, key_list, dataloader.vocabs[0].pad_id, \
+		assert res["fw-bw-ppl hashvalue"] == res_shuffle["fw-bw-ppl hashvalue"]
+
+		for data_unequal in generate_unequal_data(data, key_list, dataloader.pad_id, \
 												  reference_key, reference_is_3D=False):
 			# dataloader.data["test"][reference_key] = data_unequal[reference_key]
-			fpm_unequal = NgramFwBwPerplexityMetric(dataloader, reference_test_list = \
-														data_unequal[reference_key], ngram = 4)
+			fpm_unequal = NgramFwBwPerplexityMetric(dataloader, 4, data_unequal[reference_key])
 
 			fpm_unequal.forward(data_unequal)
 			res_unequal = fpm_unequal.close()
-			assert res["fwppl hashvalue"] != res_unequal["fwppl hashvalue"]
-			assert res["bwppl hashvalue"] != res_unequal["bwppl hashvalue"]
-
-		fpm_unequal = NgramFwBwPerplexityMetric(dataloader, reference_test_list = \
-													data[reference_key], ngram = 3)
+			assert res["fw-bw-ppl hashvalue"] != res_unequal["fw-bw-ppl hashvalue"]
+		fpm_unequal = NgramFwBwPerplexityMetric(dataloader, 3, data[reference_key])
 		fpm_unequal.forward(data)
 		res_unequal = fpm_unequal.close()
-		assert res["fwppl hashvalue"] != res_unequal["fwppl hashvalue"]
-		assert res["bwppl hashvalue"] != res_unequal["bwppl hashvalue"]
+		assert res["fw-bw-ppl hashvalue"] != res_unequal["fw-bw-ppl hashvalue"]
 
 	@pytest.mark.parametrize('argument, shape, type, gen_len, ref_len', fwbw_perplexity_test_parameter)
 	def test_close(self, argument, shape, type, gen_len, ref_len):
@@ -134,11 +127,9 @@ class TestNgramFwBwPerplexityMetric():
 								   gen_len=gen_len, ref_len=ref_len)
 		# dataloader.data["test"][reference_key] = data[reference_key]
 		if argument == 'default':
-			fpm = NgramFwBwPerplexityMetric(dataloader, reference_test_list = \
-												data[reference_key], ngram = 4)
+			fpm = NgramFwBwPerplexityMetric(dataloader, 4, data[reference_key])
 		else:
-			fpm = NgramFwBwPerplexityMetric(dataloader, reference_test_list = \
-												data[reference_key], ngram = 4, gen_key = gen_key)
+			fpm = NgramFwBwPerplexityMetric(dataloader, 4, data[reference_key], gen_key)
 
 		fpm.forward(data)
 		fpm.close()
