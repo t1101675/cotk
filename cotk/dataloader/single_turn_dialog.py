@@ -65,7 +65,7 @@ class SingleTurnDialog(LanguageProcessing):
 
 		elif pretrained == "bert":
 			if not isinstance(tokenizer, PretrainedTokenizer):
-				raise ValueError("tokenize should be loaded first if you want a gpt2 dataloader")
+				raise ValueError("tokenize should be loaded first if you want a bert dataloader")
 			vocab = PretrainedVocab(tokenizer.tokenizer)
 			with FieldContext.set_parameters(tokenizer=tokenizer,\
 					vocab=vocab, \
