@@ -139,6 +139,16 @@ class Vocab(LoadClassInterface, metaclass=DocStringInheritor):
 		'''int: The id of eos token. Raise ``KeyError`` if no eos token in this instance. {_VOCAB_MORE_DOCSTRING}
 		'''
 		return self.get_special_tokens_id("eos")
+	@property
+	def cls_id(self) -> int:
+		'''int: The id of cls token. Raise ``KeyError`` if no eos token in this instance. {_VOCAB_MORE_DOCSTRING}
+		'''
+		return self.get_special_tokens_id("cls")
+	@property
+	def sep_id(self) -> int:
+		'''int: The id of cls token. Raise ``KeyError`` if no eos token in this instance. {_VOCAB_MORE_DOCSTRING}
+		'''
+		return self.get_special_tokens_id("sep")	
 
 	def get_setting_hash(self) -> str:
 		'''Get setting hash for the Vocabulary instance.

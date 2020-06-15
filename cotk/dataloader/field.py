@@ -539,6 +539,8 @@ class Sentence(Field):
 	unk_id = copy_property(get_vocab, Vocab, "unk_id")
 	go_id = copy_property(get_vocab, Vocab, "go_id")
 	eos_id = copy_property(get_vocab, Vocab, "eos_id")
+	cls_id = copy_property(get_vocab, Vocab, "cls_id")
+	sep_id = copy_property(get_vocab, Vocab, "sep_id")
 
 class SentenceDefault(Sentence):
 	'''Bases: :class:`.dataloader.Sentence`, :class:`.dataloader.Field`
@@ -730,6 +732,100 @@ class SentenceGPT2(Sentence):
 		else:
 			ids = trim_before_target(list(ids), self.vocab.eos_id)
 		return ids
+
+class SentenceBERT(Sentence):
+	'''Bases: :class:`.dataloader.Sentence`, :class:`.dataloader.Field`
+
+	A field for sentence in the format of BERT.
+
+	{INIT_DOCSTRING}
+
+	{SENTENCE_INPUT_FORMAT}
+	'''
+
+	INIT_DOCSTRING = Sentence.INIT_DOCSTRING.replace(":class:Vocab", ":class:PretrainedVocab")
+
+	def __init__(self, tokenizer: Union[None, PretrainedTokenizer] = None, \
+			vocab: Optional[PretrainedVocab] = None, \
+			vocab_from_mapping: Optional[Dict[str, str]] = None, \
+			max_sent_length: Union[int, None, _InfiniteLength] = None, \
+			convert_to_lower_letter: Optional[bool] = None):
+
+		super().__init__(tokenizer=tokenizer, \
+				vocab=vocab, vocab_from_mappings=vocab_from_mappings,\
+				max_sent_length=max_sent_length, \
+				convert_to_lower_letter=convert_to_lower_letter)
+
+		if not isinstance(self.tokenizer, PretrainedTokenizer) or self.tokenizer.get_tokenizer_class() != "BERTTokenizer":
+			raise ValueError("You have to specify a pretrained tokenizer compatible with BERT")
+		self.inner_tokenizer = self.tokenizer.tokenizer
+
+		if not isinstance(self.vocab, PretrainedVocab):
+			raise ValueError("You have to specify a PretrainedVocab for SentenceBERT field")
+		self.vocab: PretrainedVocab
+	
+	def add_special_to_ids(self, ids: List[int]) -> List[int]:
+		return [self.vocab.cls_id] + ids + [self.vocab.sep_id]
+
+	def remove_special_in_ids(self, ids: List[int], remove_special=True, trim=True) -> List[int]:
+		if trim:
+			ids = self.trim_in_ids(ids)
+		if remove_special:
+			ids = self._remove_special_in_ids(ids, self.vocab.cls_id, self.vocab.sep_id)
+		return ids
+
+	_GET_BATCH_RETURN_VALUE = SentenceDefault._GET_BATCH_RETURN_VALUE
+
+	_GET_BATCH_EXAMPLE = """
+		Examples:
+			>>> # This example is based on GPT2Tokenizer. The vocab files are in ./tests/dummy_gpt2vocab.
+			>>> # field.eos_id = 413 # <|endoftext|>, also used for <pad>, <unk>, <go>
+			>>> field.get_batch('sent', data, [0, 2])
+			{
+				"sent": numpy.array([
+					[413, 6, 134, 321, 407, 107, 157, 121, 372, 201, 402, 105, 413, 413, 413, 413],
+						# ['<|endoftext|>', 'A', 'Ġbicycle', 'Ġreplica', 'Ġwith', 'Ġa', 'Ġclock', 'Ġas', 'Ġthe',
+						#	'Ġfront', 'Ġwheel', 'Ġ.', '<|endoftext|>', '<|endoftext|>', '<|endoftext|>', '<|endoftext|>']
+					[413, 6, 149, 370, 330, 384, 126, 298, 236, 130, 107, 255, 298, 149, 105, 413],
+						# ['<|endoftext|>', 'A', 'Ġcar', 'Ġthat', 'Ġseems', 'Ġto', 'Ġbe', 'Ġparked', 'Ġillegally',
+						#	'Ġbehind', 'Ġa', 'Ġlegally', 'Ġparked', 'Ġcar', 'Ġ.', '<|endoftext|>']
+				]),
+				"sent_length": numpy.array([13, 16]), # length of sentences
+				"sent_allvocabs": numpy.array([
+					[413, 6, 134, 321, 407, 107, 157, 121, 372, 201, 402, 105, 413, 413, 413, 413],
+						# ['<|endoftext|>', 'A', 'Ġbicycle', 'Ġreplica', 'Ġwith', 'Ġa', 'Ġclock', 'Ġas', 'Ġthe',
+						#	'Ġfront', 'Ġwheel', 'Ġ.', '<|endoftext|>', '<|endoftext|>', '<|endoftext|>', '<|endoftext|>']
+					[413, 6, 149, 370, 330, 384, 126, 298, 236, 130, 107, 255, 298, 149, 105, 413],
+						# ['<|endoftext|>', 'A', 'Ġcar', 'Ġthat', 'Ġseems', 'Ġto', 'Ġbe', 'Ġparked', 'Ġillegally',
+						#	'Ġbehind', 'Ġa', 'Ġlegally', 'Ġparked', 'Ġcar', 'Ġ.', '<|endoftext|>']
+				]),
+				"sent_str": [
+					"A bicycle replica with a clock as the front wheel .",
+					"A car that seems to be parked illegally behind a legally parked car .",
+				],
+			}
+		"""
+	
+	def get_batch(self, name: str, data: Dict[str, Any], indexes: List[int]) -> Dict[str, Any]:
+		res: Dict[str, Any] = {}
+		data_id, data_str = data["id"], data["str"]
+		batch_size = len(indexes)
+		res[name + "_length"] = np.array([len(data_id[i]) for i in indexes], dtype=int)
+		res_sent = res[name] = np.ones((batch_size, np.max(res[name + "_length"])), dtype=int) * self.vocab.pad_id
+		#res_attn = res[name + "_attnmask"] = np.zeros((batch_size, np.max(res[name + "_length"])), dtype=int)
+		for i, j in enumerate(indexes):
+			sent = data_id[j]
+			res_sent[i, :len(sent)] = sent
+		#	res_attn[i, :len(sent)] = 1
+		res[name + "_allvocabs"] = res_sent.copy()
+		res[name + "_str"] = [data_str[i] for i in indexes]
+		return res
+
+	def trim_in_ids(self, ids: List[int]) -> List[int]:
+		# The first token can't be the sep token
+		ids = trim_before_target(list(ids), self.vocab.sep_id)
+		return ids
+
 
 class _SessionContent(_FieldContent):
 	'''Store the content data of :class:`Session` Field.
