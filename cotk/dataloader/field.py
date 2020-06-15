@@ -747,7 +747,7 @@ class SentenceBERT(Sentence):
 
 	def __init__(self, tokenizer: Union[None, PretrainedTokenizer] = None, \
 			vocab: Optional[PretrainedVocab] = None, \
-			vocab_from_mapping: Optional[Dict[str, str]] = None, \
+			vocab_from_mappings: Optional[Dict[str, str]] = None, \
 			max_sent_length: Union[int, None, _InfiniteLength] = None, \
 			convert_to_lower_letter: Optional[bool] = None):
 
@@ -756,7 +756,7 @@ class SentenceBERT(Sentence):
 				max_sent_length=max_sent_length, \
 				convert_to_lower_letter=convert_to_lower_letter)
 
-		if not isinstance(self.tokenizer, PretrainedTokenizer) or self.tokenizer.get_tokenizer_class() != "BERTTokenizer":
+		if not isinstance(self.tokenizer, PretrainedTokenizer) or self.tokenizer.get_tokenizer_class() != "BertTokenizer":
 			raise ValueError("You have to specify a pretrained tokenizer compatible with BERT")
 		self.inner_tokenizer = self.tokenizer.tokenizer
 

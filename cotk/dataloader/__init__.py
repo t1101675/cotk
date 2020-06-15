@@ -18,7 +18,7 @@ from .sentence_classification import SentenceClassification, SST
 __all__ = [ \
 	'Tokenizer', 'SimpleTokenizer', 'PretrainedTokenizer', \
 	'Vocab', 'GeneralVocab', 'PretrainedVocab', 'SimpleVocab',\
-	'Field', 'Sentence', 'SentenceDefault', 'SentenceGPT2', 'Session', 'SessionDefault', 'DenseLabel', 'SparseLabel', \
+	'Field', 'Sentence', 'SentenceDefault', 'SentenceGPT2', "SentenceBERT", 'Session', 'SessionDefault', 'DenseLabel', 'SparseLabel', \
 	'Context', 'FieldContext', 'VocabContext', \
 	'Dataloader', 'LanguageProcessing', \
 	'LanguageGeneration', 'MSCOCO', \
