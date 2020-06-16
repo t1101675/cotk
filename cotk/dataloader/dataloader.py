@@ -575,6 +575,8 @@ class LanguageProcessing(Dataloader):
 	unk_id = copy_property(get_default_vocab, Vocab, "unk_id")
 	go_id = copy_property(get_default_vocab, Vocab, "go_id")
 	eos_id = copy_property(get_default_vocab, Vocab, "eos_id")
+	cls_id = copy_property(get_default_vocab, Vocab, "cls_id")
+	sep_id = copy_property(get_default_vocab, Vocab, "sep_id")
 
 	_SENTENCE_MORE_DOCSTRING = '''It calls the identical method of the :class:`Sentence` instance ``sentence``,\
 		from :meth:`.get_default_field()`.'''
