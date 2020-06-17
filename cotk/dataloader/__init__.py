@@ -7,7 +7,7 @@ your model from one dataset to other datasets.
 
 from .tokenizer import Tokenizer, SimpleTokenizer, PretrainedTokenizer
 from .vocab import Vocab, GeneralVocab, PretrainedVocab, SimpleVocab
-from .field import Field, Sentence, SentenceDefault, SentenceGPT2, Session, SessionDefault, DenseLabel, SparseLabel
+from .field import Field, Sentence, SentenceDefault, SentenceGPT2, SentenceBERT, Session, SessionDefault, DenseLabel, SparseLabel
 from .context import Context, FieldContext, VocabContext
 from .dataloader import Dataloader, LanguageProcessing
 from .language_generation import LanguageGeneration, MSCOCO

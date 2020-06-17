@@ -244,7 +244,7 @@ class Sentence(Field):
 	'''Bases: :class:`.dataloader.Field`
 
 	A field for sentence. This class is a virtual class and the base of
-	:class:`Sentence` and :class:`SentenceGPT2`.
+	:class:`Sentence`, :class:`SentenceGPT2` and :class:`SentenceBERT`.
 
 	{INIT_DOCSTRING}
 

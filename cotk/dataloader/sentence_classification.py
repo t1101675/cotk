@@ -2,7 +2,7 @@
 import warnings
 from collections import OrderedDict
 
-from .field import Sentence, SentenceGPT2
+from .field import Sentence, SentenceGPT2, SentenceBERT
 from ..hooks import hooks
 from .dataloader import LanguageProcessing
 from .context import FieldContext, VocabContext
@@ -57,6 +57,18 @@ class SentenceClassification(LanguageProcessing):
 											 max_sent_length=max_sent_length,
 											 convert_to_lower_letter=convert_to_lower_letter):
 				super().__init__(file_id, fields)
+		elif pretrained == 'bert':
+			if fields is None:
+				fields = OrderedDict(['sentence', 'SentenceBERT'])
+			if not isinstance(tokenizer, PretrainedTokenizer):
+				raise ValueError("tokenize should be loaded first if you want a gptbert dataloader")
+			vocab = PretrainedVocab(tokenizer.tokenizer)
+			with FieldContext.set_parameters(tokenizer=tokenizer,
+											 vocab=vocab,
+											 max_sent_length=max_sent_length,
+											 convert_to_lower_letter=convert_to_lower_letter):
+				super().__init__(file_id, fields)
+
 		else:
 			raise ValueError("No pretrained name %s" % pretrained)
 
@@ -69,6 +81,15 @@ class SentenceClassification(LanguageProcessing):
 					if isinstance(field, Sentence) and not isinstance(field, SentenceGPT2):
 						warnings.warn("If you want to use a gpt2 multi_turn_dialog, you'd better use %s instead of %s."
 									  % (SentenceGPT2.__name__, type(field).__name__))
+
+		if pretrained == 'bert':
+			# check whether SentenceBERT is used.
+			for set_name, set_fields in self.fields.items():
+				for field_name, field in set_fields.items():
+					if isinstance(field, Sentence) and not isinstance(field, SentenceBERT):
+						warnings.warn("If you want to use a bert multi_turn_dialog, you'd better use %s instead of %s."
+									  % (SentenceBERT.__name__, type(field).__name__))
+
 
 
 	def get_batch(self, set_name, indexes):
