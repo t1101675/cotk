@@ -249,6 +249,7 @@ We design different field for different pretrained models, including:
 
 * GPT2: :class:`SentenceGPT2`, :class:`SessionGPT2`
 * BERT: :class:`SentenceBERT`
+
 .. _tokenizer_ref:
 
 Tokenizer
