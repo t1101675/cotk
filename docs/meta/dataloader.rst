@@ -170,6 +170,7 @@ They define how dataloaders read the file, process the data, and provide the dat
 * :class:`Session`
    * :class:`SessionDefault`
    * :class:`SessionGPT2`
+   * :class:`SessionBERT`
 * :class:`DenseLabel`
 * :class:`SparseLabel`
 
@@ -248,7 +249,7 @@ For some pretrained models like ``GPT2``, ``<go>`` are not pretrained in the voc
 We design different field for different pretrained models, including:
 
 * GPT2: :class:`SentenceGPT2`, :class:`SessionGPT2`
-* BERT: :class:`SentenceBERT`
+* BERT: :class:`SentenceBERT`, :class:`SessionBERT`
 
 .. _tokenizer_ref:
 
