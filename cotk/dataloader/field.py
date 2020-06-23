@@ -1248,6 +1248,96 @@ class SessionGPT2(Session):
 		return res
 
 
+class SessionBERT(Session):
+	'''Bases: :class:`.dataloader.Session`, :class:`.dataloader.Field`
+
+	A field for session in the format of BERT.
+
+	{INIT_DOCSTRING}
+
+	{SESSION_INPUT_FORMAT}
+	'''
+	INIT_DOCSTRING = Sentence.INIT_DOCSTRING.replace(":class:Vocab", ":class:PretrainedVocab")
+
+	def __init__(self, tokenizer: Union[None, PretrainedTokenizer] = None,
+				 vocab: Optional[PretrainedVocab] = None,
+				 vocab_from_mappings: Optional[Dict[str, str]] = None,
+				 max_sent_length: Union[int, None, _InfiniteLength] = None,
+				 convert_to_lower_letter: Optional[bool] = None,
+				 max_turn_length: Union[int, None, _InfiniteLength] = None,):
+		super().__init__(tokenizer, vocab, vocab_from_mappings, max_sent_length, convert_to_lower_letter, max_turn_length)
+		if not isinstance(self.tokenizer, PretrainedTokenizer) or not self.tokenizer.get_tokenizer_class() != "BertTokenizer":
+			raise ValueError("You have to specify a pretrained tokenizer compatible with bert")
+		self.inner_tokenizer = self.tokenizer.tokenizer
+		if not isinstance(self.vocab, PretrainedVocab):
+			raise ValueError("You have to specify a PretrainedVocab for SentenceBERT field")
+		self.vocab: PretrainedVocab
+
+	add_special_to_ids = SentenceBERT.add_special_to_ids
+	remove_special_in_ids = SentenceBERT.remove_special_in_ids
+	trim_in_ids = SentenceBERT.trim_in_ids
+
+	_GET_BATCH_DATA_DOCSTRING = SessionDefault._GET_BATCH_DATA_DOCSTRING
+	# TODO: update return value of get_batch. I have trouble with `GPT2Tokenizer.from_pretrained('gpt2')`
+	# the following codes in Examples haven't been run.
+	_GET_BATCH_EXAMPLE = r"""
+	Examples:
+		>>> from transformers.tokenization_gpt2 import GPT2Tokenizer
+		>>> from cotk.dataloader.tokenizer import PretrainedTokenizer
+		>>> tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+		>>> field = SessionGPT2(PretrainedTokenizer(tokenizer))
+		>>> field_content = field._create('train')
+		>>> dataset = iter(['How are you?\n', "I'm fine. Thank you! And you?\n", "I'm fine, too.\n", "\n", "How to install CoTk?\n", "pip install cotk.\n", "\n"])
+		>>> while True:
+		... 	try:
+		... 		field_content.read_next(dataset)
+		... 	except StopIteration:
+		... 		break
+		>>> field_content.process_before_vocab()
+		>>> field.vocab.build_vocab()
+		>>> data = field_content.get_data()
+		>>> data
+		{'id': [[[2, 8, 18, 6, 5, 3],
+				[2, 9, 7, 12, 10, 4, 17, 6, 13, 15, 6, 5, 3],
+				[2, 9, 7, 12, 10, 14, 22, 4, 3]],
+			   [[2, 8, 21, 11, 16, 5, 3], [2, 20, 11, 19, 4, 3]]],
+		  'str': [['How are you?', "I'm fine. Thank you! And you?", "I'm fine, too."],
+			  ['How to install CoTk?', 'pip install cotk.']]}
+		>>> batch_data = field.get_batch('session', data, [1])
+		>>> batch_data
+		{'session_turn_length': array([2]),
+		  'session_sent_length': [[7, 6]],
+		  'session': array([[[ 2,  8, 21, 11, 16,  5,  3],
+						 [ 2, 20, 11, 19,  4,  3,  0]]]),
+		  'session_allvocabs': array([[[ 2,  8, 21, 11, 16,  5,  3],
+						 [ 2, 20, 11, 19,  4,  3,  0]]]),
+		  'session_str': [['How to install CoTk?', 'pip install cotk.']]}
+		>>> # 'session_turn_length' (`name` + '_turn_length') is a :class:`np.ndarray` object with shape == (batch size, ). Each element is the length of corresponding sssion.
+		>>> # 'session_sent_length' (`name` + '_sent_length') is List[List[int]]. Each integer is the length of corresponding sentence.
+		>>> # 'session' (`name`) is a :class:`np.ndarray` object with shape == (batch size, max turn length, max sentence length).
+		>>>				# batch_data['session'][i, j] is a sentence. batch_data['session'][i, j, k] is an id.
+		>>>				# If `self.max_turn_length` is not None and j >= `self.max_turn_length` or `self.max_sent_length` is not None and k >= `self.max_sent_length`,
+		>>>				# batch_data['session'][i, j, k] is `self.eos_id`.
+		>>> # 'session_allvocabs' (`name` + '_allvocabs') is the same with 'session'."""
+
+
+	def get_batch(self, name: str, data: Dict[str, Any], indexes: List[int]) -> Dict[str, Any]:
+		res = {}
+		data_id, data_str = data['id'], data['str']
+		batch_size = len(indexes)
+		turn_lengths = res[name + "_turn_length"] = np.array([len(data_id[i]) for i in indexes], dtype=int)
+		res[name + "_sent_length"] = [[len(sent) for sent in data_id[i]] for i in indexes]
+		max_sent_length = max(map(max, res[name + "_sent_length"]))
+		res_session = res[name] = np.ones((batch_size, turn_lengths.max(), max_sent_length), dtype=int) * self.vocab.pad_id
+		for i, j in enumerate(indexes):
+			session = data_id[j]
+			session = [list(sent) + [self.vocab.pad_id] * (max_sent_length - len(sent)) for sent in session]
+			res_session[i, :len(session)] = np.array(session, dtype=int)
+		res[name + "_allvocabs"] = res_session.copy()
+		res[name + "_str"] = [data_str[i] for i in indexes]
+		return res
+
+
 class SentenceCandidateDefault(SessionDefault):
 	"""Bases: :class:`.dataloader.Field`.
 	A Field for candidate. Several sentences represent candidate answers of a dialog task.
@@ -1264,6 +1354,19 @@ class SentenceCandidateDefault(SessionDefault):
 class SentenceCandidateGPT2(SessionGPT2):
 	"""Bases: :class:`.dataloader.Field`.
 	A Field for candidate. Several sentences represent candidate answers of a dialog task. These sentences are in the format of GPT2.
+	"""
+	def __init__(self, tokenizer: Union[None, Tokenizer, str] = None,
+				 vocab: Optional[Vocab] = None,
+				 vocab_from_mappings: Optional[Dict[str, str]] = None,
+				 max_sent_length: Union[int, None, _InfiniteLength] = None,
+				 convert_to_lower_letter: Optional[bool] = None):
+		super().__init__(tokenizer, vocab, vocab_from_mappings, max_sent_length, convert_to_lower_letter,
+						 max_turn_length=Sentence.INFINITE_LENGTH)
+
+
+class SentenceCandidateBERT(SessionBERT):
+	"""Bases: :class:`.dataloader.Field`.
+	A Field for candidate. Several sentences represent candidate answers of a dialog task. These sentences are in the format of BERT.
 	"""
 	def __init__(self, tokenizer: Union[None, Tokenizer, str] = None,
 				 vocab: Optional[Vocab] = None,
