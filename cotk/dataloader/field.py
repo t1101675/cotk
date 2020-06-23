@@ -1278,14 +1278,14 @@ class SessionBERT(Session):
 	trim_in_ids = SentenceBERT.trim_in_ids
 
 	_GET_BATCH_DATA_DOCSTRING = SessionDefault._GET_BATCH_DATA_DOCSTRING
-	# TODO: update return value of get_batch. I have trouble with `GPT2Tokenizer.from_pretrained('gpt2')`
+	# TODO: update return value of get_batch. I have trouble with `BertTokenizer.from_pretrained('bert')`
 	# the following codes in Examples haven't been run.
 	_GET_BATCH_EXAMPLE = r"""
 	Examples:
-		>>> from transformers.tokenization_gpt2 import GPT2Tokenizer
+		>>> from transformers.tokenization_bert import BertTokenizer
 		>>> from cotk.dataloader.tokenizer import PretrainedTokenizer
-		>>> tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-		>>> field = SessionGPT2(PretrainedTokenizer(tokenizer))
+		>>> tokenizer = BertTokenizer.from_pretrained('bert')
+		>>> field = SessionBERT(PretrainedTokenizer(tokenizer))
 		>>> field_content = field._create('train')
 		>>> dataset = iter(['How are you?\n', "I'm fine. Thank you! And you?\n", "I'm fine, too.\n", "\n", "How to install CoTk?\n", "pip install cotk.\n", "\n"])
 		>>> while True:
@@ -1317,7 +1317,7 @@ class SessionBERT(Session):
 		>>> # 'session' (`name`) is a :class:`np.ndarray` object with shape == (batch size, max turn length, max sentence length).
 		>>>				# batch_data['session'][i, j] is a sentence. batch_data['session'][i, j, k] is an id.
 		>>>				# If `self.max_turn_length` is not None and j >= `self.max_turn_length` or `self.max_sent_length` is not None and k >= `self.max_sent_length`,
-		>>>				# batch_data['session'][i, j, k] is `self.eos_id`.
+		>>>				# batch_data['session'][i, j, k] is `self.pad_id`.
 		>>> # 'session_allvocabs' (`name` + '_allvocabs') is the same with 'session'."""
 
 
