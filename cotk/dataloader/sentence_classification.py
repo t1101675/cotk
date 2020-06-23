@@ -46,51 +46,32 @@ class SentenceClassification(LanguageProcessing):
 				with VocabContext.set_parameters(min_rare_vocab_times=min_rare_vocab_times,
 												 min_frequent_vocab_times=min_frequent_vocab_times):
 					super().__init__(file_id, fields)
-		elif pretrained == 'gpt2':
+		elif pretrained == 'gpt2' or pretrained == 'bert':
 			if fields is None:
-				fields = OrderedDict(['sentence', 'SentenceGPT2'])
+				fields = OrderedDict(['sentence', 'SentenceGPT2' if pretrained == 'gpt2' else 'SentenceBERT'])
 			if not isinstance(tokenizer, PretrainedTokenizer):
-				raise ValueError("tokenize should be loaded first if you want a gpt2 dataloader")
+				raise ValueError("tokenize should be loaded first if you want a %s dataloader" % (pretrained))
 			vocab = PretrainedVocab(tokenizer.tokenizer)
 			with FieldContext.set_parameters(tokenizer=tokenizer,
 											 vocab=vocab,
 											 max_sent_length=max_sent_length,
 											 convert_to_lower_letter=convert_to_lower_letter):
 				super().__init__(file_id, fields)
-		elif pretrained == 'bert':
-			if fields is None:
-				fields = OrderedDict(['sentence', 'SentenceBERT'])
-			if not isinstance(tokenizer, PretrainedTokenizer):
-				raise ValueError("tokenize should be loaded first if you want a bert dataloader")
-			vocab = PretrainedVocab(tokenizer.tokenizer)
-			with FieldContext.set_parameters(tokenizer=tokenizer,
-											 vocab=vocab,
-											 max_sent_length=max_sent_length,
-											 convert_to_lower_letter=convert_to_lower_letter):
-				super().__init__(file_id, fields)
-
 		else:
 			raise ValueError("No pretrained name %s" % pretrained)
 
 		self.set_default_field('train', 'sent')
 
-		if pretrained == 'gpt2':
-			# check whether SentenceGPT2 is used.
+		if pretrained == 'gpt2' or pretrained == 'bert':
+			# check whether SentenceGPT2 or SentenceBERT is used.
 			for set_name, set_fields in self.fields.items():
 				for field_name, field in set_fields.items():
-					if isinstance(field, Sentence) and not isinstance(field, SentenceGPT2):
-						warnings.warn("If you want to use a gpt2 multi_turn_dialog, you'd better use %s instead of %s."
+					if isinstance(field, Sentence) and pretrained == 'gpt2' and not isinstance(field, SentenceGPT2):
+						warnings.warn("If you want to use a gpt2 sentence_classification, you'd better use %s instead of %s."
 									  % (SentenceGPT2.__name__, type(field).__name__))
-
-		if pretrained == 'bert':
-			# check whether SentenceBERT is used.
-			for set_name, set_fields in self.fields.items():
-				for field_name, field in set_fields.items():
-					if isinstance(field, Sentence) and not isinstance(field, SentenceBERT):
-						warnings.warn("If you want to use a bert multi_turn_dialog, you'd better use %s instead of %s."
+					if isinstance(field, Sentence) and pretrained == 'bert' and not isinstance(field, SentenceBERT):
+						warnings.warn("If you want to use a bert sentence_classification, you'd better use %s instead of %s."
 									  % (SentenceBERT.__name__, type(field).__name__))
-
-
 
 	def get_batch(self, set_name, indexes):
 		'''Get a batch of specified `indexes`.

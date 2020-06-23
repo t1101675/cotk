@@ -40,26 +40,15 @@ class LanguageGeneration(LanguageProcessing):
 					super().__init__(file_id, OrderedDict([("sent", "SentenceDefault")]))
 			self.set_default_field("train", "sent")
 
-		elif pretrained == "gpt2":
+		elif pretrained == "gpt2" or pretrained == "bert":
 			if not isinstance(tokenizer, PretrainedTokenizer):
-				raise ValueError("tokenize should be loaded first if you want a gpt2 dataloader")
+				raise ValueError("tokenize should be loaded first if you want a %s dataloader" % (pretrained))
 			vocab = PretrainedVocab(tokenizer.tokenizer)
 			with FieldContext.set_parameters(tokenizer=tokenizer,\
 					vocab=vocab, \
 					max_sent_length=max_sent_length, \
 					convert_to_lower_letter=convert_to_lower_letter):
-				super().__init__(file_id, OrderedDict([("sent", "SentenceGPT2")]))
-			self.set_default_field("train", "sent")
-
-		elif pretrained == "bert":
-			if not isinstance(tokenizer, PretrainedTokenizer):
-				raise ValueError("tokenize should be loaded first if you want a bert dataloader")
-			vocab = PretrainedVocab(tokenizer.tokenizer)
-			with FieldContext.set_parameters(tokenizer=tokenizer,\
-					vocab=vocab, \
-					max_sent_length=max_sent_length, \
-					convert_to_lower_letter=convert_to_lower_letter):
-				super().__init__(file_id, OrderedDict([("sent", "SentenceBERT")]))
+				super().__init__(file_id, OrderedDict([("sent", "SentenceGPT2" if pretrained == "gpt2" else "SentenceBERT")]))
 			self.set_default_field("train", "sent")
 		else:
 			raise ValueError("No pretrained name %s" % pretrained)
