@@ -61,7 +61,7 @@ class SentenceClassification(LanguageProcessing):
 			if fields is None:
 				fields = OrderedDict(['sentence', 'SentenceBERT'])
 			if not isinstance(tokenizer, PretrainedTokenizer):
-				raise ValueError("tokenize should be loaded first if you want a gptbert dataloader")
+				raise ValueError("tokenize should be loaded first if you want a bert dataloader")
 			vocab = PretrainedVocab(tokenizer.tokenizer)
 			with FieldContext.set_parameters(tokenizer=tokenizer,
 											 vocab=vocab,

@@ -114,6 +114,18 @@ class MultiTurnDialog(LanguageProcessing):
 											 max_turn_length=max_turn_length,
 											 convert_to_lower_letter=convert_to_lower_letter):
 				super().__init__(file_id, fields)
+		elif pretrained == "bert":
+			if fields is None:
+				fields = OrderedDict(['session', 'SessionBERT'])
+			if not isinstance(tokenizer, PretrainedTokenizer):
+				raise ValueError("tokenize should be loaded first if you want a bert dataloader")
+			vocab = PretrainedVocab(tokenizer.tokenizer)
+			with FieldContext.set_parameters(tokenizer=tokenizer,
+											 vocab=vocab,
+											 max_sent_length=max_sent_length,
+											 max_turn_length=max_turn_length,
+											 convert_to_lower_letter=convert_to_lower_letter):
+				super().__init__(file_id, fields)
 		else:
 			raise ValueError("No pretrained name %s" % pretrained)
 
@@ -126,6 +138,13 @@ class MultiTurnDialog(LanguageProcessing):
 					if isinstance(field, Session) and not isinstance(field, SessionGPT2):
 						warnings.warn("If you want to use a gpt2 multi_turn_dialog, you'd better use %s instead of %s."
 									  % (SessionGPT2.__name__, type(field).__name__))
+		if pretrained == 'bert':
+			# check whether SessionBERT is used.
+			for set_name, set_fields in self.fields.items():
+				for field_name, field in set_fields.items():
+					if isinstance(field, Session) and not isinstance(field, SessionBERT):
+						warnings.warn("If you want to use a bert multi_turn_dialog, you'd better use %s instead of %s."
+									  % (SessionBERT.__name__, type(field).__name__))
 
 	_SESSION_MORE_DOCSTRING = '''It calls the identical method of the :class:`Session` instance ``session``,\
 		from :meth:`.get_default_field()`.'''
