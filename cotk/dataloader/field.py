@@ -539,8 +539,6 @@ class Sentence(Field):
 	unk_id = copy_property(get_vocab, Vocab, "unk_id")
 	go_id = copy_property(get_vocab, Vocab, "go_id")
 	eos_id = copy_property(get_vocab, Vocab, "eos_id")
-	cls_id = copy_property(get_vocab, Vocab, "cls_id")
-	sep_id = copy_property(get_vocab, Vocab, "sep_id")
 
 class SentenceDefault(Sentence):
 	'''Bases: :class:`.dataloader.Sentence`, :class:`.dataloader.Field`
@@ -765,7 +763,7 @@ class SentenceBERT(Sentence):
 		self.vocab: PretrainedVocab
 	
 	def add_special_to_ids(self, ids: List[int]) -> List[int]:
-		return [self.vocab.cls_id] + ids + [self.vocab.sep_id]
+		return [self.vocab.get_special_tokens_id("cls")] + ids + [self.vocab.get_special_tokens_id("sep")]
 
 	def remove_special_in_ids(self, ids: List[int], remove_special=True, trim=True) -> List[int]:
 		if trim:
@@ -778,7 +776,32 @@ class SentenceBERT(Sentence):
 
 	_GET_BATCH_EXAMPLE = """
 		Examples:
-			>>> # This example is based on GPT2Tokenizer. The vocab files are in ./tests/dummy_gpt2vocab.
+			>>> # This example is based on BertTokenizer. The vocab files are in ./tests/dummy_bertvocab.
+			>>> field.get_batch('sent', data, [0, 1])
+			{
+				"sent": numpy.array([
+					[101, 147,  37,  29, 359, 102,   0,   0,   0,   0,   0,   0,   0],
+						# ['<cls>', 'How', 'are', 'you', '?', '<sep>', '<pad>', '<pad>', '<pad>', '<pad>', '<pad>', '<pad>', '<pad>']
+       				[101, 375, 334, 379, 127, 341, 350,  29, 328,   9,  29, 359, 102]
+						# ['<cls>', 'i', ''', 'm', 'fine', '.',  'thank', 'you', '!', 'and', 'you', '?', '<sep>']
+				]),
+				"sent_length": numpy.array([6, 13]), # length of sentences,
+				"sent_allvocabs": numpy.array([
+					[101, 147,  37,  29, 359, 102,   0,   0,   0,   0,   0,   0,   0],
+						# ['<cls>', 'how', 'are', 'you', '?', '<sep>', '<pad>', '<pad>', '<pad>', '<pad>', '<pad>', '<pad>', '<pad>']
+       				[101, 375, 334, 379, 127, 341, 350,  29, 328,   9,  29, 359, 102]
+					   	# ['<cls>', 'i', ''', 'm', 'fine', '.',  'thank', 'you', '!', 'and', 'you', '?', '<sep>']
+				]),
+				"sent_str": [
+					"How are you?", 
+					"I'm fine. Thank you! And you?"
+				],
+			}
+		"""
+
+	_GET_BATCH_EXAMPLE = """
+		Examples:
+			>>> # This example is based on BertTokenizer. The vocab files are in ./tests/dummy_bertvocab.
 			>>> # field.eos_id = 413 # <|endoftext|>, also used for <pad>, <unk>, <go>
 			>>> field.get_batch('sent', data, [0, 2])
 			{
