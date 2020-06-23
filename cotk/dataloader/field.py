@@ -769,7 +769,7 @@ class SentenceBERT(Sentence):
 		if trim:
 			ids = self.trim_in_ids(ids)
 		if remove_special:
-			ids = self._remove_special_in_ids(ids, self.vocab.cls_id, self.vocab.sep_id)
+			ids = self._remove_special_in_ids(ids, self.vocab.get_special_tokens_id("cls"), self.vocab.get_special_tokens_id("sep"))
 		return ids
 
 	_GET_BATCH_RETURN_VALUE = SentenceDefault._GET_BATCH_RETURN_VALUE
@@ -799,36 +799,6 @@ class SentenceBERT(Sentence):
 			}
 		"""
 
-	_GET_BATCH_EXAMPLE = """
-		Examples:
-			>>> # This example is based on BertTokenizer. The vocab files are in ./tests/dummy_bertvocab.
-			>>> # field.eos_id = 413 # <|endoftext|>, also used for <pad>, <unk>, <go>
-			>>> field.get_batch('sent', data, [0, 2])
-			{
-				"sent": numpy.array([
-					[413, 6, 134, 321, 407, 107, 157, 121, 372, 201, 402, 105, 413, 413, 413, 413],
-						# ['<|endoftext|>', 'A', 'Ġbicycle', 'Ġreplica', 'Ġwith', 'Ġa', 'Ġclock', 'Ġas', 'Ġthe',
-						#	'Ġfront', 'Ġwheel', 'Ġ.', '<|endoftext|>', '<|endoftext|>', '<|endoftext|>', '<|endoftext|>']
-					[413, 6, 149, 370, 330, 384, 126, 298, 236, 130, 107, 255, 298, 149, 105, 413],
-						# ['<|endoftext|>', 'A', 'Ġcar', 'Ġthat', 'Ġseems', 'Ġto', 'Ġbe', 'Ġparked', 'Ġillegally',
-						#	'Ġbehind', 'Ġa', 'Ġlegally', 'Ġparked', 'Ġcar', 'Ġ.', '<|endoftext|>']
-				]),
-				"sent_length": numpy.array([13, 16]), # length of sentences
-				"sent_allvocabs": numpy.array([
-					[413, 6, 134, 321, 407, 107, 157, 121, 372, 201, 402, 105, 413, 413, 413, 413],
-						# ['<|endoftext|>', 'A', 'Ġbicycle', 'Ġreplica', 'Ġwith', 'Ġa', 'Ġclock', 'Ġas', 'Ġthe',
-						#	'Ġfront', 'Ġwheel', 'Ġ.', '<|endoftext|>', '<|endoftext|>', '<|endoftext|>', '<|endoftext|>']
-					[413, 6, 149, 370, 330, 384, 126, 298, 236, 130, 107, 255, 298, 149, 105, 413],
-						# ['<|endoftext|>', 'A', 'Ġcar', 'Ġthat', 'Ġseems', 'Ġto', 'Ġbe', 'Ġparked', 'Ġillegally',
-						#	'Ġbehind', 'Ġa', 'Ġlegally', 'Ġparked', 'Ġcar', 'Ġ.', '<|endoftext|>']
-				]),
-				"sent_str": [
-					"A bicycle replica with a clock as the front wheel .",
-					"A car that seems to be parked illegally behind a legally parked car .",
-				],
-			}
-		"""
-	
 	def get_batch(self, name: str, data: Dict[str, Any], indexes: List[int]) -> Dict[str, Any]:
 		res: Dict[str, Any] = {}
 		data_id, data_str = data["id"], data["str"]
@@ -846,7 +816,7 @@ class SentenceBERT(Sentence):
 
 	def trim_in_ids(self, ids: List[int]) -> List[int]:
 		# The first token can't be the sep token
-		ids = trim_before_target(list(ids), self.vocab.sep_id)
+		ids = trim_before_target(list(ids), self.vocab.get_special_tokens_id("sep"))
 		return ids
 
 
