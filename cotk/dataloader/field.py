@@ -328,6 +328,13 @@ class Sentence(Field):
 		except KeyError:
 			raise KeyError("Unknown set_name %s, do not specify in the vocab_from_mappings" % set_name) from None
 
+	@classmethod
+	def get_pretrained_class(cls, pretrained):
+		return {
+			"gpt2": "SentenceGPT2",
+			"bert": "SentenceBERT"
+		}[pretrained]
+
 	def get_tokenizer(self):
 		return self.tokenizer
 
@@ -1015,6 +1022,13 @@ class Session(Sentence):
 			session_ids (List[List[int]]): The input ids of session.
 		'''
 		return [self.trim_in_ids(sent_ids) for sent_ids in session_ids]
+
+	@classmethod
+	def get_pretrained_class(cls, pretrained):
+		return {
+			"gpt2": SessionGPT2,
+			"bert": SessionBERT
+		}[pretrained]
 
 
 class SessionDefault(Session):

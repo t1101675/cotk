@@ -17,6 +17,7 @@ from .dataloader import LanguageProcessing
 from .tokenizer import PretrainedTokenizer
 from .vocab import PretrainedVocab
 from .context import FieldContext, VocabContext
+from .field import Sentence
 
 if False: # for type check # pylint: disable=using-constant-test
 	from ..metric import MetricChain #pylint: disable=unused-import
@@ -60,10 +61,8 @@ class SingleTurnDialog(LanguageProcessing):
 					vocab=vocab, \
 					max_sent_length=max_sent_length, \
 					convert_to_lower_letter=convert_to_lower_letter):
-				if pretrained == "gpt2":
-					super().__init__(file_id, OrderedDict([("post", "SentenceGPT2"), ("resp", "SentenceGPT2")]))
-				else: # pretrained == "bert"
-					super().__init__(file_id, OrderedDict([("post", "SentenceBERT"), ("resp", "SentenceBERT")]))
+					super().__init__(file_id, OrderedDict([("post", Sentence.get_pretrained_class(
+						pretrained).__name__), ("resp", Sentence.get_pretrained_class(pretrained).__name__)]))
 
 			self.set_default_field("train", "post")
 

@@ -643,6 +643,18 @@ SessionDefault
 
     .. automethod:: get_batch
 
+SessionGPT2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: SessionGPT2
+
+    .. automethod:: get_batch
+
+SessionBERT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: SessionBERT
+
+    .. automethod:: get_batch
+
 DenseLabel
 #########################################
 .. autoclass:: DenseLabel

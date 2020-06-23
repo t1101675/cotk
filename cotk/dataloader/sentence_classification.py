@@ -8,6 +8,7 @@ from .dataloader import LanguageProcessing
 from .context import FieldContext, VocabContext
 from .vocab import GeneralVocab, PretrainedVocab
 from .tokenizer import PretrainedTokenizer
+from .field import Sentence
 
 if False: # for type check # pylint: disable=using-constant-test
 	from ..metric import MetricChain #pylint: disable=unused-import
@@ -48,7 +49,7 @@ class SentenceClassification(LanguageProcessing):
 					super().__init__(file_id, fields)
 		elif pretrained == 'gpt2' or pretrained == 'bert':
 			if fields is None:
-				fields = OrderedDict(['sentence', 'SentenceGPT2' if pretrained == 'gpt2' else 'SentenceBERT'])
+				fields = OrderedDict(['sentence', Sentence.get_pretrained_class(pretrained).__name__])
 			if not isinstance(tokenizer, PretrainedTokenizer):
 				raise ValueError("tokenize should be loaded first if you want a %s dataloader" % (pretrained))
 			vocab = PretrainedVocab(tokenizer.tokenizer)
@@ -66,12 +67,9 @@ class SentenceClassification(LanguageProcessing):
 			# check whether SentenceGPT2 or SentenceBERT is used.
 			for set_name, set_fields in self.fields.items():
 				for field_name, field in set_fields.items():
-					if isinstance(field, Sentence) and pretrained == 'gpt2' and not isinstance(field, SentenceGPT2):
-						warnings.warn("If you want to use a gpt2 sentence_classification, you'd better use %s instead of %s."
-									  % (SentenceGPT2.__name__, type(field).__name__))
-					if isinstance(field, Sentence) and pretrained == 'bert' and not isinstance(field, SentenceBERT):
-						warnings.warn("If you want to use a bert sentence_classification, you'd better use %s instead of %s."
-									  % (SentenceBERT.__name__, type(field).__name__))
+					if isinstance(field, Sentence) and not isinstance(field, Sentence.get_pretrained_class(pretrained)):
+						warnings.warn("If you want to use a %s sentence_classification, you'd better use %s instead of %s."
+									  % (pretrained, Sentence.get_pretrained_class(pretrained).__name__, type(field).__name__))
 
 	def get_batch(self, set_name, indexes):
 		'''Get a batch of specified `indexes`.
