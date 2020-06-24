@@ -1198,8 +1198,8 @@ class SessionGPT2(Session):
 	# TODO: update return value of get_batch. I have trouble with `GPT2Tokenizer.from_pretrained('gpt2')`
 	# the following codes in Examples haven't been run.
 	_GET_BATCH_EXAMPLE = r"""
-	Examples:
 	# NOTE: We only show the structure of return value of get_batch. The real value of each entry may depends on the loaded vocab.
+	Examples:
 		>>> from transformers.tokenization_gpt2 import GPT2Tokenizer
 		>>> from cotk.dataloader.tokenizer import PretrainedTokenizer
 		>>> tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
@@ -1289,8 +1289,8 @@ class SessionBERT(Session):
 	# TODO: update return value of get_batch. I have trouble with `BertTokenizer.from_pretrained('bert')`
 	# the following codes in Examples haven't been run.
 	_GET_BATCH_EXAMPLE = r"""
+	# NOTE: We only show the structure of return value of get_batch. The real value of each entry may depends on the loaded vocab.
 	Examples:
-		# NOTE: We only show the structure of return value of get_batch. The real value of each entry may depends on the loaded vocab.
 		>>> from transformers.tokenization_bert import BertTokenizer
 		>>> from cotk.dataloader.tokenizer import PretrainedTokenizer
 		>>> tokenizer = BertTokenizer.from_pretrained('bert')
