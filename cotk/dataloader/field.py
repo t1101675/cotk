@@ -331,8 +331,8 @@ class Sentence(Field):
 	@classmethod
 	def get_pretrained_class(cls, pretrained):
 		return {
-			"gpt2": "SentenceGPT2",
-			"bert": "SentenceBERT"
+			"gpt2": SentenceGPT2,
+			"bert": SentenceBERT
 		}[pretrained]
 
 	def get_tokenizer(self):
