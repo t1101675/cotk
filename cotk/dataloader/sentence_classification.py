@@ -40,7 +40,7 @@ class SentenceClassification(LanguageProcessing):
 
 		if pretrained is None:
 			if fields is None:
-				fields = OrderedDict([('sentence', 'SentenceDefault')])
+				fields = OrderedDict([('sent', 'SentenceDefault')])
 			with FieldContext.set_parameters(tokenizer=tokenizer,
 											 max_sent_length=max_sent_length,
 											 convert_to_lower_letter=convert_to_lower_letter):
