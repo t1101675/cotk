@@ -40,7 +40,7 @@ class SentenceClassification(LanguageProcessing):
 
 		if pretrained is None:
 			if fields is None:
-				fields = OrderedDict([('sent', 'SentenceDefault')])
+				fields = OrderedDict([('sent', 'SentenceDefault'), ('label', 'DenseLabel')])
 			with FieldContext.set_parameters(tokenizer=tokenizer,
 											 max_sent_length=max_sent_length,
 											 convert_to_lower_letter=convert_to_lower_letter):
@@ -49,7 +49,7 @@ class SentenceClassification(LanguageProcessing):
 					super().__init__(file_id, fields)
 		elif pretrained == 'gpt2' or pretrained == 'bert':
 			if fields is None:
-				fields = OrderedDict(['sentence', Sentence.get_pretrained_class(pretrained).__name__])
+				fields = OrderedDict([('sent', Sentence.get_pretrained_class(pretrained).__name__), ('label', 'DenseLabel')])
 			if not isinstance(tokenizer, PretrainedTokenizer):
 				raise ValueError("tokenize should be loaded first if you want a %s dataloader" % (pretrained))
 			vocab = PretrainedVocab(tokenizer.tokenizer)
@@ -164,12 +164,10 @@ class SST(SentenceClassification):
 	@hooks.hook_dataloader
 	def __init__(self, file_id, min_frequent_vocab_times=10, \
 				 max_sent_length=50, min_rare_vocab_times=0, tokenizer='space', pretrained=None):
-		fields = OrderedDict([['sent', 'SentenceDefault'], ['label', 'DenseLabel']])
 		super().__init__(file_id,
 						 tokenizer=tokenizer,
 						 max_sent_length=max_sent_length,
 						 convert_to_lower_letter=False,
 						 min_frequent_vocab_times=min_frequent_vocab_times,
 						 min_rare_vocab_times=min_rare_vocab_times,
-						 fields=fields,
 						 pretrained=pretrained)
