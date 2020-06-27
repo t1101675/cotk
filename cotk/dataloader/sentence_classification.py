@@ -27,7 +27,6 @@ class SentenceClassification(LanguageProcessing):
 	_version = 2
 
 
-	@hooks.hook_dataloader
 	def __init__(self, file_id: str,
 				 tokenizer=None,
 				 max_sent_length=None,
@@ -161,7 +160,6 @@ class SST(SentenceClassification):
 
 	'''
 
-	@hooks.hook_dataloader
 	def __init__(self, file_id, min_frequent_vocab_times=10, \
 				 max_sent_length=50, min_rare_vocab_times=0, tokenizer='space', pretrained=None):
 		super().__init__(file_id,
