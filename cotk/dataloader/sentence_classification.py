@@ -3,7 +3,6 @@ import warnings
 from collections import OrderedDict
 
 from .field import Sentence, SentenceGPT2, SentenceBERT
-from ..hooks import hooks
 from .dataloader import LanguageProcessing
 from .context import FieldContext, VocabContext
 from .vocab import GeneralVocab, PretrainedVocab
