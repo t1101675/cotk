@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 from .._utils.metaclass import copy_func
 from .dataloader import LanguageProcessing
-from .field import Session, SessionGPT2, Field
+from .field import Session, Field
 from .tokenizer import PretrainedTokenizer
 from .vocab import PretrainedVocab
 from .context import FieldContext, VocabContext
@@ -102,7 +102,7 @@ class MultiTurnDialog(LanguageProcessing):
 					super().__init__(file_id, fields)
 		elif pretrained == 'gpt2' or pretrained == 'bert':
 			if fields is None:
-				fields = OrderedDict(['session', Session.get_pretrained_class(pretrained).__name__])
+				fields = OrderedDict([('session', Session.get_pretrained_class(pretrained).__name__)])
 			if not isinstance(tokenizer, PretrainedTokenizer):
 				raise ValueError("tokenize should be loaded first if you want a %s dataloader" % (pretrained))
 			vocab = PretrainedVocab(tokenizer.tokenizer)
@@ -118,7 +118,7 @@ class MultiTurnDialog(LanguageProcessing):
 		self.set_default_field('train', 'session')
 
 		if pretrained == 'gpt2' or pretrained == 'bert':
-			# check whether SessionGPT2 is used.
+			# check whether SessionGPT2 or SessionBERT is used.
 			for set_name, set_fields in self.fields.items():
 				for field_name, field in set_fields.items():
 					if isinstance(field, Session) and not isinstance(field, Session.get_pretrained_class(pretrained)):
@@ -268,10 +268,10 @@ class SwitchboardCorpus(MultiTurnDialog):
 				**{k: OrderedDict([['session', 'SessionDefault']]) for k in ['train', 'dev', 'test']},
 				'multi_ref': OrderedDict([['session', 'SessionDefault'], ['candidate', "SentenceCandidateDefault"]])
 			}
-		elif pretrained == 'gpt2':
+		elif pretrained == 'gpt2' or pretrained == 'bert':
 			fields = {
-				**{k: OrderedDict([['session', 'SessionGPT2']]) for k in ['train', 'dev', 'test']},
-				'multi_ref': OrderedDict([['session', 'SessionGPT2'], ['candidate', "SentenceCandidateGPT2"]])
+				**{k: OrderedDict([('session', Session.get_pretrained_class(pretrained).__name__)]) for k in ['train', 'dev', 'test']},
+				'multi_ref': OrderedDict([['session', Session.get_pretrained_class(pretrained).__name__], ['candidate', Session.get_candidate_pretrained_class(pretrained).__name__]])
 			}
 		else:
 			raise ValueError("No pretrained name %s" % pretrained)

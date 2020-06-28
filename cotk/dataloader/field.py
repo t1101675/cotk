@@ -1030,6 +1030,13 @@ class Session(Sentence):
 			"bert": SessionBERT
 		}[pretrained]
 
+	@classmethod
+	def get_candidate_pretrained_class(cls, pretrained):
+		return {
+			"gpt2": SentenceCandidateGPT2,
+			"bert": SentenceCandidateBERT
+		}[pretrained]
+
 
 class SessionDefault(Session):
 	'''Bases: :class:`.dataloader.Session`, :class:`.dataloader.Field`
@@ -1183,7 +1190,7 @@ class SessionGPT2(Session):
 				 convert_to_lower_letter: Optional[bool] = None,
 				 max_turn_length: Union[int, None, _InfiniteLength] = None,):
 		super().__init__(tokenizer, vocab, vocab_from_mappings, max_sent_length, convert_to_lower_letter, max_turn_length)
-		if not isinstance(self.tokenizer, PretrainedTokenizer) or not self.tokenizer.get_tokenizer_class() != "GPT2Tokenizer":
+		if not isinstance(self.tokenizer, PretrainedTokenizer) or self.tokenizer.get_tokenizer_class() != "GPT2Tokenizer":
 			raise ValueError("You have to specify a pretrained tokenizer compatible with gpt2")
 		self.inner_tokenizer = self.tokenizer.tokenizer
 		if not isinstance(self.vocab, PretrainedVocab):
@@ -1274,7 +1281,7 @@ class SessionBERT(Session):
 				 convert_to_lower_letter: Optional[bool] = None,
 				 max_turn_length: Union[int, None, _InfiniteLength] = None,):
 		super().__init__(tokenizer, vocab, vocab_from_mappings, max_sent_length, convert_to_lower_letter, max_turn_length)
-		if not isinstance(self.tokenizer, PretrainedTokenizer) or not self.tokenizer.get_tokenizer_class() != "BertTokenizer":
+		if not isinstance(self.tokenizer, PretrainedTokenizer) or self.tokenizer.get_tokenizer_class() != "BertTokenizer":
 			raise ValueError("You have to specify a pretrained tokenizer compatible with bert")
 		self.inner_tokenizer = self.tokenizer.tokenizer
 		if not isinstance(self.vocab, PretrainedVocab):
