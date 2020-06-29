@@ -506,7 +506,7 @@ class FwBwBleuCorpusMetric(MetricBase):
 		bleu_irl_fw, bleu_irl_bw = [], []
 		weights = np.ones(self.ngram) / self.ngram
 
-		tasks = ((refs, hyps[i], weights) for i in range(sample_hyps_num))
+		tasks = ((refs[:sample_hyps_num], hyps[i], weights) for i in range(sample_hyps_num))
 		pool: Optional[Any]
 		values: Iterable[Any]
 		if sample_hyps_num >= 1000 and self.cpu_count > 1:
@@ -523,7 +523,7 @@ class FwBwBleuCorpusMetric(MetricBase):
 			pool.close()
 			pool.join()
 
-		tasks = ((hyps, refs[i], weights) for i in range(sample_refs_num))
+		tasks = ((hyps[:sample_hyps_num], refs[i], weights) for i in range(sample_refs_num))
 		if sample_refs_num >= 1000 and self.cpu_count > 1:
 			pool = Pool(self.cpu_count)
 			values = pool.imap_unordered(_sentence_bleu, tasks, chunksize=20)
