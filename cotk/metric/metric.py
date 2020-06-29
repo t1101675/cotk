@@ -26,10 +26,15 @@ class MetricBase(LoadClassInterface, metaclass=DocStringInheritor):
 	IGNORE_SMOOTHING_ERROR_ARGUMENTS = \
 		"""ignore_smoothing_error (bool, optional): Specifies whether to ignore the smoothing error when calculating \
 			BLEU. Default: ``False``."""
-	SAMPLE_ARGUMENTS_IN_BLEU = \
-		"""sample (int, optional): Number of examples sampled from the generated sentences. Default: ``1000``."""
+	SAMPLE_HYP_ARGUMENTS_IN_BLEU = \
+		"""n_sample_hyp (int, optional): Number of hypothesis sampled for calculating the BLEU score. A larger value will reduce \
+			the variance of the result but become slower. Default: ``100``."""
+	SAMPLE_REF_ARGUMENTS_IN_BLEU = \
+		"""n_sample_ref (int, optional): Number of references sampled for calculating the BLEU score. A larger value will lead to a larger \
+			result, because we have more acceptable references. Default: ``1000``."""
 	SAMPLE_ARGUMENTS_IN_NGRAM_PERPLEXITY = \
-		SAMPLE_ARGUMENTS_IN_BLEU.replace("Default: ``1000``.", "Default: ``10000``.")
+		"""n_sample (int, optional): Number of hypothesis sampled for training the language model and calculating the ngram perplexity. \
+			A larger value will reduce the variance of the result but become slower. Default: ``10000``."""
 	SEED_ARGUMENTS = \
 		"""seed (int, optional): Random seed for sampling. Default: ``1229``."""
 	REFERENCE_TEST_LIST_ARGUMENTS = \

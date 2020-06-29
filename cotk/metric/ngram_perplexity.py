@@ -19,6 +19,11 @@ class NgramFwBwPerplexityMetric(MetricBase):
 		{MetricBase.SEED_ARGUMENTS}
 		{MetricBase.CPU_COUNT_ARGUMENTS}
 
+	.. warning::
+		``fw-bw-ppl hashvalue`` considers the actual sample size of generated samples.
+		Therefore ``hashvalue`` may vary if the number of generated samples is smaller
+		than ``n_sample``.
+
 	Here is an example (to only show the format but not the exact value of results):
 
 		>>> dl = cotk.dataloader.UbuntuCorpus('resources://Ubuntu_small')
@@ -30,19 +35,18 @@ class NgramFwBwPerplexityMetric(MetricBase):
 		... }
 		>>> metric.forward(data)
 		>>> metric.close()
-		{'fwppl': 51.44751843841384,
- 		 'bwppl': 138.954327895075,
- 		 'fwppl hashvalue': '2ea52377084692953f602e4ebad23e8a46e1c4bb527947d29a03c14b426efe67',
- 		 'bwppl hashvalue': '2ea52377084692953f602e4ebad23e8a46e1c4bb527947d29a03c14b426efe67'}
+		{'fw-ppl': 51.44751843841384,
+ 		 'bw-ppl': 138.954327895075,
+ 		 'fw-bw-ppl hashvalue': '2ea52377084692953f602e4ebad23e8a46e1c4bb527947d29a03c14b426efe67'}
 	'''
 
 	_name = 'NgramFwBwPerplexityMetric'
-	_version = 2
+	_version = 3
 
 	def __init__(self, dataloader: Union["LanguageProcessing", "Sentence", "Session"], \
 			reference_test_list: List[Any], ngram: int = 4, *, \
 			tokenizer: Union[None, Tokenizer, str] = None, gen_key: str = "gen", \
-			sample: int = 10000, seed: int = 1229, cpu_count: Optional[int] = None):
+			n_sample: int = 10000, seed: int = 1229, cpu_count: Optional[int] = None):
 		super().__init__(self._name, self._version)
 		self.dataloader = dataloader
 		self.ngram = ngram
@@ -51,7 +55,7 @@ class NgramFwBwPerplexityMetric(MetricBase):
 		self.gen_key = gen_key
 		self.hyps: List[Any] = []
 		self.cpu_count = cpu_count
-		self.sample = sample
+		self.n_sample = n_sample
 		self.seed = seed
 
 	def forward(self, data: Dict[str, Any]):
@@ -75,11 +79,7 @@ class NgramFwBwPerplexityMetric(MetricBase):
 		'''
 		res = super().close()
 
-		sample_num = self.sample
-		if sample_num > len(self.reference_test_list):
-			sample_num = len(self.reference_test_list)
-		if sample_num > len(self.hyps):
-			sample_num = len(self.hyps)
+		sample_num = min(self.n_sample, len(self.reference_test_list), len(self.hyps))
 
 		origin_refs = self.reference_test_list[:sample_num]
 		origin_hyps = self.hyps[:sample_num]
@@ -110,22 +110,22 @@ class NgramFwBwPerplexityMetric(MetricBase):
 		model = KneserNeyInterpolated(self.ngram, \
 					left_pad, right_pad, \
 					unk, cpu_count=self.cpu_count)
-		logging.info("training forward")
+		# logging.info("training forward")
 		model.fit(refs)
-		logging.info("scoring forward")
+		# logging.info("scoring forward")
 		fwppl = model.perplexity(hyps)
 
 		model = KneserNeyInterpolated(self.ngram, \
 					left_pad, right_pad, \
 					unk, cpu_count=self.cpu_count)
-		logging.info("training backward")
+		# logging.info("training backward")
 		model.fit(hyps)
-		logging.info("scoring backward")
+		# logging.info("scoring backward")
 		bwppl = model.perplexity(refs)
 
 		res.update({"fwppl": fwppl, "bwppl": bwppl})
 
 		self._hash_unordered_list(refs)
-		self._hash_ordered_data((self.ngram,))
+		self._hash_ordered_data((self.ngram, sample_num))
 		res["fwppl hashvalue"] = res["bwppl hashvalue"] = self._hashvalue()
 		return res
