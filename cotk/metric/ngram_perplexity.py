@@ -72,10 +72,9 @@ class NgramFwBwPerplexityMetric(MetricBase):
 	def close(self) -> Dict[str, Any]:
 		'''Return a dict which contains:
 
-			* **fwppl**: fw ppl value.
-			* **bwppl**: bw ppl value.
-			* **fwppl hashvalue**: hash value of fw ppl.
-			* **bwppl hashvalue**: hash value of bw ppl.
+			* **fw-ppl**: forward perplexity.
+			* **bw-ppl**: backward perpleixty.
+			* **fw-bw-ppl hashvalue**: hash value of forward & backward ppl.
 		'''
 		res = super().close()
 
@@ -123,9 +122,9 @@ class NgramFwBwPerplexityMetric(MetricBase):
 		# logging.info("scoring backward")
 		bwppl = model.perplexity(refs)
 
-		res.update({"fwppl": fwppl, "bwppl": bwppl})
+		res.update({"fw-ppl": fwppl, "bw-ppl": bwppl})
 
 		self._hash_unordered_list(refs)
 		self._hash_ordered_data((self.ngram, sample_num))
-		res["fwppl hashvalue"] = res["bwppl hashvalue"] = self._hashvalue()
+		res["fw-bw-ppl hashvalue"] = self._hashvalue()
 		return res
