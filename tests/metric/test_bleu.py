@@ -57,7 +57,7 @@ class TestBleuCorpusMetric:
 		['field', True, True, 1, 1], 
 		['dataloader', False, True, 1, 1], 
 		['dataloader', True, False, 5, 5], 
-		['dataloader', True, False, 5, 1]
+		['dataloader', True, False, 5, 2]
 	]
 	@pytest.mark.parametrize('data_loader, to_list, pad, reference_num, data_reference_num', all_dataloader)
 	def test_hashvalue(self, data_loader, to_list, pad, reference_num, data_reference_num):
