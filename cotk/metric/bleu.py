@@ -493,7 +493,7 @@ class FwBwBleuCorpusMetric(MetricBase):
 
 		n_sample_max = max(self.n_sample_hyp, self.n_sample_ref)
 		sample_hyps = sample_hyps[:n_sample_max]
-		sample_refs = sample_hyps[:n_sample_max]
+		sample_refs = sample_refs[:n_sample_max]
 
 		refs: List[Any]
 		hyps: List[Any]
