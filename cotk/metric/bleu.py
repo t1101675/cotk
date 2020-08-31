@@ -339,12 +339,13 @@ class SelfBleuCorpusMetric(MetricBase):
 			ref = [self.dataloader.convert_ids_to_tokens(ids, remove_special=True, trim=True) for ids in ref]
 
 		if "unk" in self.dataloader.get_special_tokens_mapping():
-			ref = replace_unk(ref, self.dataloader.get_special_tokens_mapping()["unk"])
-
+			_ref = replace_unk(ref, self.dataloader.get_special_tokens_mapping()["unk"])
+		else:
+			_ref = ref
 		bleu_irl = []
 
 		weights = np.ones(self.ngram) / self.ngram
-		tasks = ((ref[:i]+ref[i+1:], ref[i], weights) for i in range(n_sample_hyp))
+		tasks = ((ref[:i]+ref[i+1:], _ref[i], weights) for i in range(n_sample_hyp))
 
 		pool: Optional[Any] = None
 		values: Iterable[Any]
@@ -485,8 +486,8 @@ class FwBwBleuCorpusMetric(MetricBase):
 
 		rng_state = random.getstate()
 		random.seed(self.seed)
-		sample_hyps = self.hyps
-		sample_refs = self.reference_test_list
+		sample_hyps = self.hyps.copy()
+		sample_refs = self.reference_test_list.copy()
 		random.shuffle(sample_hyps)
 		random.shuffle(sample_refs)
 		random.setstate(rng_state)
