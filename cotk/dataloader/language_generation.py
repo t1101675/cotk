@@ -122,14 +122,17 @@ class LanguageGeneration(LanguageProcessing):
 		return metric
 
 	GEN_KEY_ARGUMENTS = MetricBase.GEN_KEY_ARGUMENTS
-	SAMPLE_ARGUMENTS_IN_BLEU = MetricBase.SAMPLE_ARGUMENTS_IN_BLEU.\
-			replace("sample (int, optional)", "sample_in_bleu (int, optional)")
+	SAMPLE_HYP_ARGUMENTS_IN_BLEU = MetricBase.SAMPLE_HYP_ARGUMENTS_IN_BLEU.\
+			replace("n_sample_hyp (int, optional)", "n_sample_hyp_in_bleu (int, optional)")
+	SAMPLE_REF_ARGUMENTS_IN_BLEU = MetricBase.SAMPLE_REF_ARGUMENTS_IN_BLEU.\
+			replace("n_sample_ref (int, optional)", "n_sample_ref_in_bleu (int, optional)")
 	SAMPLE_ARGUMENTS_IN_NGRAM_PERPLEXITY = MetricBase.SAMPLE_ARGUMENTS_IN_NGRAM_PERPLEXITY.\
-			replace("sample (int, optional)", "sample_in_ngram_perplexity (int, optional)")
+			replace("n_sample (int, optional)", "n_sample_in_ngram_perplexity (int, optional)")
 	SEED_ARGUMENTS = MetricBase.SEED_ARGUMENTS
 	CPU_COUNT_ARGUMENTS = MetricBase.CPU_COUNT_ARGUMENTS
-	def get_inference_metric(self, gen_key="gen", sample_in_bleu=1000, \
-			sample_in_ngram_perplexity=10000, seed=1229, cpu_count=None) -> "MetricChain":
+	def get_inference_metric(self, gen_key="gen", n_sample_hyp_in_bleu=100, \
+			n_sample_ref_in_bleu=1000,
+			n_sample_in_ngram_perplexity=10000, seed=1229, cpu_count=None) -> "MetricChain":
 		'''Get metrics for inference. In other words, this function provides metrics for
 		language generation tasks.
 
@@ -144,7 +147,8 @@ class LanguageGeneration(LanguageProcessing):
 
 		Arguments:
 			{GEN_KEY_ARGUMENTS}
-			{SAMPLE_ARGUMENTS_IN_BLEU}
+			{SAMPLE_HYP_ARGUMENTS_IN_BLEU}
+			{SAMPLE_REF_ARGUMENTS_IN_BLEU}
 			{SAMPLE_ARGUMENTS_IN_NGRAM_PERPLEXITY}
 			{SEED_ARGUMENTS}
 			{CPU_COUNT_ARGUMENTS}
@@ -154,19 +158,21 @@ class LanguageGeneration(LanguageProcessing):
 		metric = MetricChain()
 		metric.add_metric(SelfBleuCorpusMetric(self, \
 					gen_key=gen_key, \
-					sample=sample_in_bleu, \
+					n_sample_hyp=n_sample_hyp_in_bleu, \
+					n_sample_ref=n_sample_ref_in_bleu, \
 					seed=seed, \
 					cpu_count=cpu_count))
 		metric.add_metric(FwBwBleuCorpusMetric(self, \
 					reference_test_list=self.get_all_batch("test")["sent"], \
 					gen_key=gen_key, \
-					sample=sample_in_bleu, \
+					n_sample_hyp=n_sample_hyp_in_bleu, \
+					n_sample_ref=n_sample_ref_in_bleu, \
 					seed=seed, \
 					cpu_count=cpu_count))
-		metric.add_metric(FwBwBleuCorpusMetric(self, \
+		metric.add_metric(NgramFwBwPerplexityMetric(self, \
 					reference_test_list=self.get_all_batch("test")["sent"], \
 					gen_key=gen_key, \
-					sample=sample_in_ngram_perplexity, \
+					n_sample=n_sample_in_ngram_perplexity, \
 					seed=seed, \
 					cpu_count=cpu_count))
 		metric.add_metric(LanguageGenerationRecorder(self, gen_key=gen_key))

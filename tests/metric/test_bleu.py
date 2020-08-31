@@ -184,7 +184,7 @@ class TestSelfBleuCorpusMetric:
 			dataloader = dataloader.get_default_field()
 		bcm = SelfBleuCorpusMetric(dataloader)
 		bcm_shuffle = SelfBleuCorpusMetric(dataloader)
-		bcm_unequal = SelfBleuCorpusMetric(dataloader, sample=2)
+		bcm_unequal = SelfBleuCorpusMetric(dataloader, n_sample_hyp=2, n_sample_ref=2)
 
 		data_shuffle = shuffle_instances(data, key_list)
 		batches_shuffle = split_batch(data_shuffle, key_list)
@@ -239,10 +239,11 @@ class TestSelfBleuCorpusMetric:
 				if data_loader == 'field':
 					dataloader = dataloader.get_default_field()
 				if argument == 'default':
-					bcm = SelfBleuCorpusMetric(dataloader, sample=4000)
+					bcm = SelfBleuCorpusMetric(dataloader, n_sample_hyp=sample, n_sample_ref=sample)
 				else:
-					bcm = SelfBleuCorpusMetric(dataloader, gen_key = gen_key, sample=4000)
-				assert bcm.sample == 4000
+					bcm = SelfBleuCorpusMetric(dataloader, gen_key = gen_key, n_sample_hyp=sample, n_sample_ref=sample)
+				assert bcm.n_sample_hyp == sample
+				assert bcm.n_sample_ref == sample
 
 				rng_state_st = random.getstate()
 				bcm.forward(data)
@@ -255,7 +256,8 @@ class TestSelfBleuCorpusMetric:
 					assert np.isclose(bcm.close()['self-bleu'], self.get_self_bleu(dataloader, _data, gen_key))
 					assert not tqdm.tqdm.called
 					assert not multiprocessing.pool.Pool.called
-				assert bcm.sample == sample
+				assert bcm.n_sample_hyp == sample
+				assert bcm.n_sample_ref == sample
 				assert same_dict(data, _data)
 				rng_state_ed = random.getstate()
 				assert operator.eq(rng_state_st, rng_state_ed)
@@ -335,7 +337,7 @@ class TestFwBwBleuCorpusMetric:
 			bcm_unequal.forward(data_unequal)
 			res_unequal = bcm_unequal.close()
 			assert res['fw-bw-bleu hashvalue'] != res_unequal['fw-bw-bleu hashvalue']
-		bcm_unequal = FwBwBleuCorpusMetric(dataloader, data[reference_key], sample=2)
+		bcm_unequal = FwBwBleuCorpusMetric(dataloader, data[reference_key], n_sample_hyp=2, n_sample_ref=2)
 		bcm_unequal.forward(data)
 		res_unequal = bcm_unequal.close()
 		assert res['fw-bw-bleu hashvalue'] != res_unequal['fw-bw-bleu hashvalue']
@@ -381,12 +383,14 @@ class TestFwBwBleuCorpusMetric:
 				if data_loader == 'field':
 					dataloader = dataloader.get_default_field()
 				if argument == 'default':
-					bcm = FwBwBleuCorpusMetric(dataloader, data[reference_key], sample=sample)
+					bcm = FwBwBleuCorpusMetric(dataloader, data[reference_key], n_sample_hyp=sample, n_sample_ref=sample)
 				else:
-					bcm = FwBwBleuCorpusMetric(dataloader, data[reference_key], gen_key = gen_key, sample=sample)
+					bcm = FwBwBleuCorpusMetric(dataloader, data[reference_key], gen_key = gen_key, n_sample_hyp=sample, n_sample_ref=sample)
 
 				rng_state_st = random.getstate()
-				assert bcm.sample == sample
+				assert bcm.n_sample_hyp == sample
+				assert bcm.n_sample_ref == sample
+
 				bcm.forward(data)
 				if use_tqdm:
 					fw_bleu = (1.0 * sum(fake_bleu_irl_fw) / len(fake_bleu_irl_fw))
