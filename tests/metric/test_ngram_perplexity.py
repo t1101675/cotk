@@ -100,8 +100,7 @@ class TestNgramFwBwPerplexityMetric():
 													data_shuffle[reference_key], ngram = 4)
 		fpm_shuffle.forward(data_shuffle)
 		res_shuffle = fpm_shuffle.close()
-		assert res["fwppl hashvalue"] == res_shuffle["fwppl hashvalue"]
-		assert res["bwppl hashvalue"] == res_shuffle["bwppl hashvalue"]
+		assert res["fw-bw-ppl hashvalue"] == res_shuffle["fw-bw-ppl hashvalue"]
 
 		for data_unequal in generate_unequal_data(data, key_list, dataloader.pad_id, \
 												  reference_key, reference_is_3D=False):
@@ -111,15 +110,13 @@ class TestNgramFwBwPerplexityMetric():
 
 			fpm_unequal.forward(data_unequal)
 			res_unequal = fpm_unequal.close()
-			assert res["fwppl hashvalue"] != res_unequal["fwppl hashvalue"]
-			assert res["bwppl hashvalue"] != res_unequal["bwppl hashvalue"]
+			assert res["fw-bw-ppl hashvalue"] != res_unequal["fw-bw-ppl hashvalue"]
 
 		fpm_unequal = NgramFwBwPerplexityMetric(dataloader, reference_test_list = \
 													data[reference_key], ngram = 3)
 		fpm_unequal.forward(data)
 		res_unequal = fpm_unequal.close()
-		assert res["fwppl hashvalue"] != res_unequal["fwppl hashvalue"]
-		assert res["bwppl hashvalue"] != res_unequal["bwppl hashvalue"]
+		assert res["fw-bw-ppl hashvalue"] != res_unequal["fw-bw-ppl hashvalue"]
 
 	@pytest.mark.parametrize('data_loader, argument, shape, type, gen_len, ref_len', fwbw_perplexity_test_parameter)
 	def test_close(self, data_loader, argument, shape, type, gen_len, ref_len):
