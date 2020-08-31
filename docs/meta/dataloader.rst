@@ -250,8 +250,11 @@ the start and the end of sentences.
 For some pretrained models like ``GPT2``, ``<go>`` are not pretrained in the vocabulary and thus not available.
 We design different field for different pretrained models, including:
 
-* GPT2: :class:`SentenceGPT2`, :class:`SessionGPT2`
-* BERT: :class:`SentenceBERT`, :class:`SessionBERT`
+* ``gpt2``: :class:`SentenceGPT2`, :class:`SessionGPT2`
+* ``bert``: :class:`SentenceBERT`, :class:`SessionBERT`
+
+If you want to use pretrained models (such as GPT2 or BERT) in a predefined dataloader (eg. :class:`LanguageGeneration`),
+the parameter ``pretrained`` must be specified (``gpt2`` ot ``bert``) and the ``tokenizer`` must be a :class:`PretrainedTokenizer` object.
 
 .. _tokenizer_ref:
 
@@ -320,7 +323,7 @@ There is also some other terms for vocabularies.
 
     Special Tokens(``special_tokens``)
         * Most used special tokens are ``<pad>``, ``<unk>``, ``<go>``, ``<eos>``.
-        * Special tokens are counted as valid vocabularies.
+        * Special tokens are counted as frequent vocabularies.
 
     Unknown tokens (``<unk>``)
         * ``<unk>`` means "Out of Vocabularies", but the meaning of ``<unk>`` may varies from situations.
@@ -659,14 +662,17 @@ SessionBERT
 
     .. automethod:: get_batch
 
-DenseLabel
+Label
 #########################################
+
+DenseLabel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: DenseLabel
 
     .. automethod:: get_batch
 
 SparseLabel
-#########################################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: SparseLabel
 
     .. automethod:: get_batch
